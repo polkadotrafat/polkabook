@@ -1,0 +1,20 @@
+.DS_Store
+*.log
+
+# Editor and local environment files
+.env
+.env.*
+
+# Build outputs
+contracts/artifacts/
+contracts/cache/
+contracts/coverage/
+contracts/coverage.json
+contracts/typechain/
+contracts/typechain-types/
+kernel/target/
+
+# Local binaries and generated kernel artifacts
+contracts/bin/dev-node
+contracts/bin/eth-rpc
+kernel/matcher.polkavm
