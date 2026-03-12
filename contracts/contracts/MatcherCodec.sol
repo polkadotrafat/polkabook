@@ -6,7 +6,7 @@ library MatcherCodec {
     uint256 internal constant HEADER_SIZE = 12;
     uint256 internal constant ORDER_SIZE = 85;
     uint256 internal constant TRADE_SIZE = 48;
-    uint256 internal constant RESPONSE_HEADER_SIZE = 5;
+    uint256 internal constant RESPONSE_HEADER_SIZE = 13;
 
     uint8 internal constant STATUS_OK = 0;
     uint8 internal constant STATUS_INVALID_SELECTOR = 1;
@@ -39,6 +39,8 @@ library MatcherCodec {
 
     struct MatchResult {
         uint8 status;
+        uint32 consumedBidCount;
+        uint32 consumedAskCount;
         Trade[] trades;
     }
 
@@ -79,6 +81,8 @@ library MatcherCodec {
 
         result.status = uint8(data[0]);
         uint256 tradeCount = _readU32(data, 1);
+        result.consumedBidCount = uint32(_readU32(data, 5));
+        result.consumedAskCount = uint32(_readU32(data, 9));
         uint256 expectedLength = RESPONSE_HEADER_SIZE + (tradeCount * TRADE_SIZE);
         if (data.length != expectedLength) {
             revert InvalidTradePayloadLength(data.length);

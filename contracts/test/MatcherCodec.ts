@@ -62,6 +62,8 @@ describe("MatcherCodec", () => {
         const tradePayload =
             "0x00" +
             "00000002" +
+            "00000001" +
+            "00000002" +
             "0000000000000001" +
             "0000000000000002" +
             "000000000000000000000000000003e8" +
@@ -87,23 +89,31 @@ describe("MatcherCodec", () => {
     it("exposes the kernel status without reverting", async () => {
         const tradePayload =
             "0x05" +
+            "00000000" +
+            "00000000" +
             "00000000"
 
         const result = await harness.decodeMatchResult(tradePayload)
 
         expect(result.status).to.equal(await harness.statusUnsortedInput())
+        expect(result.consumedBidCount).to.equal(0n)
+        expect(result.consumedAskCount).to.equal(0n)
         expect(result.trades).to.have.length(0)
     })
 
     it("reverts on non-success kernel statuses when decoding trades", async () => {
-        await expect(harness.decodeTrades("0x0500000000")).to.be.revertedWithCustomError(
+        await expect(
+            harness.decodeTrades("0x05000000000000000000000000"),
+        ).to.be.revertedWithCustomError(
             harness,
             "MatcherKernelError",
         )
     })
 
     it("rejects malformed trade payloads", async () => {
-        await expect(harness.decodeTrades("0x0000000100")).to.be.revertedWithCustomError(
+        await expect(
+            harness.decodeTrades("0x00000001000000000000000000"),
+        ).to.be.revertedWithCustomError(
             harness,
             "InvalidTradePayloadLength",
         )
