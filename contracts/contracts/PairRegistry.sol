@@ -81,9 +81,7 @@ contract PairRegistry is Ownable {
         });
         allOrderBooks.push(orderBook);
 
-        if (vault.owner() == address(this)) {
-            vault.setOrderBookAuthorization(orderBook, true);
-        }
+        vault.setOrderBookAuthorization(orderBook, true);
 
         emit PairCreated(baseToken, quoteToken, orderBook);
     }

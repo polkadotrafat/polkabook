@@ -11,6 +11,7 @@ contract OrderBookBuckets is Ownable {
     uint8 public constant SIDE_ASK = 1;
     uint256 public constant MATCH_DEPTH = 20;
     uint256 public constant PRICE_SCALE = 1e18;
+    uint256 public constant MAX_SKIPS = 200;
 
     error InvalidSide(uint8 side);
     error InvalidOrderParameters(uint128 price, uint128 quantity);
@@ -22,6 +23,7 @@ contract OrderBookBuckets is Ownable {
     error MatcherCallFailed();
     error UnknownTradeOrder(uint64 bidOrderId, uint64 askOrderId);
     error ConsumedCountMismatch(uint8 side, uint32 expected, uint32 actual);
+    error TombstoneLimitExceeded(uint8 side, uint128 price, uint256 skipped, uint256 limit);
 
     struct OrderRecord {
         uint64 orderId;
@@ -154,7 +156,7 @@ contract OrderBookBuckets is Ownable {
                 _removePriceLevel(order.side, order.price);
             }
             if (level.headIndex < level.orderIds.length && level.orderIds[level.headIndex] == orderId) {
-                _advanceHeadIfNeeded(order.side, order.price);
+                _advanceHeadIfNeeded(order.side, order.price, MAX_SKIPS);
             }
         }
 
@@ -276,6 +278,10 @@ contract OrderBookBuckets is Ownable {
         top.crossed = top.bestBidPrice != 0 && top.bestAskPrice != 0 && top.bestBidPrice >= top.bestAskPrice;
     }
 
+    function prunePriceLevel(uint8 side, uint128 price, uint256 limit) external {
+        _advanceHeadIfNeeded(side, price, limit);
+    }
+
     function _triggerMatch() internal {
         MatcherCodec.Order[] memory bids = _collectTopOrders(SIDE_BID, MATCH_DEPTH);
         MatcherCodec.Order[] memory asks = _collectTopOrders(SIDE_ASK, MATCH_DEPTH);
@@ -380,14 +386,22 @@ contract OrderBookBuckets is Ownable {
             }
 
             uint256 orderCount = level.orderIds.length;
+            uint256 skipped = 0;
+            bool foundActiveOrder;
             for (uint256 j = level.headIndex; j < orderCount && count < depth; ) {
                 OrderRecord storage order = orders[level.orderIds[j]];
                 if (!order.isActive || order.filled >= order.quantity) {
+                    if (skipped == MAX_SKIPS) {
+                        revert TombstoneLimitExceeded(side, currentPrice, skipped, MAX_SKIPS);
+                    }
                     unchecked {
                         ++j;
+                        ++skipped;
                     }
                     continue;
                 }
+
+                foundActiveOrder = true;
 
                 scratch[count] = MatcherCodec.Order({
                     orderId: order.orderId,
@@ -401,6 +415,10 @@ contract OrderBookBuckets is Ownable {
                     ++count;
                     ++j;
                 }
+            }
+
+            if (!foundActiveOrder && count < depth && level.totalOpenQuantity > 0) {
+                revert TombstoneLimitExceeded(side, currentPrice, skipped, MAX_SKIPS);
             }
 
             currentPrice = level.nextPrice;
@@ -418,6 +436,7 @@ contract OrderBookBuckets is Ownable {
     function _appendToPriceLevel(uint64 orderId, uint8 side, uint128 price, uint128 quantity) internal {
         PriceLevel storage level = priceLevels[side][price];
         if (level.totalOpenQuantity == 0) {
+            level.headIndex = uint64(level.orderIds.length);
             _insertPriceLevel(side, price);
         }
 
@@ -483,16 +502,18 @@ contract OrderBookBuckets is Ownable {
         level.nextPrice = 0;
     }
 
-    function _advanceHeadIfNeeded(uint8 side, uint128 price) internal {
+    function _advanceHeadIfNeeded(uint8 side, uint128 price, uint256 limit) internal {
         PriceLevel storage level = priceLevels[side][price];
         uint256 orderCount = level.orderIds.length;
-        while (level.headIndex < orderCount) {
+        uint256 i = 0;
+        while (level.headIndex < orderCount && i < limit) {
             OrderRecord storage order = orders[level.orderIds[level.headIndex]];
             if (order.isActive && order.filled < order.quantity) {
                 break;
             }
             unchecked {
                 ++level.headIndex;
+                ++i;
             }
         }
     }
@@ -517,7 +538,7 @@ contract OrderBookBuckets is Ownable {
                 }
             }
 
-            _advanceHeadIfNeeded(side, consumedOrder.price);
+            _advanceHeadIfNeeded(side, consumedOrder.price, MAX_SKIPS);
             unchecked {
                 ++i;
             }
@@ -583,14 +604,22 @@ contract OrderBookBuckets is Ownable {
             }
 
             uint256 orderCount = level.orderIds.length;
+            uint256 skipped = 0;
+            bool foundActiveOrder;
             for (uint256 j = level.headIndex; j < orderCount && count < depth; ) {
                 OrderRecord storage order = orders[level.orderIds[j]];
                 if (!order.isActive || order.filled >= order.quantity) {
+                    if (skipped == MAX_SKIPS) {
+                        revert TombstoneLimitExceeded(side, currentPrice, skipped, MAX_SKIPS);
+                    }
                     unchecked {
                         ++j;
+                        ++skipped;
                     }
                     continue;
                 }
+
+                foundActiveOrder = true;
 
                 MatcherCodec.Order memory currentOrder = MatcherCodec.Order({
                     orderId: order.orderId,
@@ -617,6 +646,10 @@ contract OrderBookBuckets is Ownable {
                     ++count;
                     ++j;
                 }
+            }
+
+            if (!foundActiveOrder && count < depth && level.totalOpenQuantity > 0) {
+                revert TombstoneLimitExceeded(side, currentPrice, skipped, MAX_SKIPS);
             }
 
             currentPrice = level.nextPrice;

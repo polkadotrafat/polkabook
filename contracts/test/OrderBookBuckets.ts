@@ -183,4 +183,44 @@ describe("OrderBookBuckets", () => {
         expect(askOrder.filled).to.equal(0n)
         expect(await matcherKernel.lastPayload()).to.equal("0x")
     })
+
+    it("fails closed when a better price level is fragmented beyond the tombstone skip limit", async () => {
+        await vault.connect(makerA).deposit(await baseToken.getAddress(), wad("400"))
+
+        for (let i = 0; i < 402; i++) {
+            await orderBook.connect(makerA).placeOrder(wad("10"), wad("1"), 1)
+        }
+        await orderBook.connect(makerA).placeOrder(wad("11"), wad("1"), 1)
+
+        for (let orderId = 2; orderId <= 401; orderId++) {
+            await orderBook.connect(makerA).cancelOrder(orderId)
+        }
+        await orderBook.connect(makerA).cancelOrder(1)
+
+        await expect(orderBook.getTopOrders(1, 2))
+            .to.be.revertedWithCustomError(orderBook, "TombstoneLimitExceeded")
+            .withArgs(1, wad("10"), 200, 200)
+    })
+
+    it("makes a reactivated price level visible immediately after prior tombstone churn", async () => {
+        await vault.connect(makerA).deposit(await baseToken.getAddress(), wad("200"))
+
+        for (let i = 0; i < 202; i++) {
+            await orderBook.connect(makerA).placeOrder(wad("10"), wad("1"), 1)
+        }
+
+        for (let orderId = 2; orderId <= 201; orderId++) {
+            await orderBook.connect(makerA).cancelOrder(orderId)
+        }
+        await orderBook.connect(makerA).cancelOrder(1)
+        await orderBook.connect(makerA).cancelOrder(202)
+        await orderBook.connect(makerA).placeOrder(wad("10"), wad("1"), 1)
+
+        const topOrders = await orderBook.getTopOrders(1, 1)
+        const levelState = await orderBook.getLevelState(1, wad("10"))
+
+        expect(topOrders).to.have.length(1)
+        expect(topOrders[0].orderId).to.equal(203n)
+        expect(levelState.headIndex).to.equal(202n)
+    })
 })

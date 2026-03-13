@@ -117,4 +117,40 @@ describe("PairRegistry", () => {
         expect(await pairOrderBook.minOrderNotional()).to.equal(wad("25"))
         expect(await pairOrderBook.tradingEnabled()).to.equal(false)
     })
+
+    it("fails closed when the registry is not authorized by the vault", async () => {
+        const Vault = await hre.ethers.getContractFactory("Vault")
+        const standaloneVault = await Vault.deploy(owner.address)
+        await standaloneVault.waitForDeployment()
+
+        const PairRegistry = await hre.ethers.getContractFactory("PairRegistry")
+        const standaloneRegistry = await PairRegistry.deploy(
+            owner.address,
+            await matcherKernel.getAddress(),
+            await standaloneVault.getAddress(),
+        )
+        await standaloneRegistry.waitForDeployment()
+
+        await expect(
+            standaloneRegistry.createPair(
+                await baseToken.getAddress(),
+                await quoteToken.getAddress(),
+                minOrderQuantity,
+                minOrderNotional,
+            ),
+        )
+            .to.be.revertedWithCustomError(standaloneVault, "UnauthorizedOrderBook")
+            .withArgs(await standaloneRegistry.getAddress())
+
+        await standaloneVault.setRegistryAuthorization(await standaloneRegistry.getAddress(), true)
+
+        await expect(
+            standaloneRegistry.createPair(
+                await baseToken.getAddress(),
+                await quoteToken.getAddress(),
+                minOrderQuantity,
+                minOrderNotional,
+            ),
+        ).to.not.be.reverted
+    })
 })
