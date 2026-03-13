@@ -38,10 +38,13 @@ describe("OrderBookBuckets", () => {
 
         const OrderBookBuckets = await hre.ethers.getContractFactory("OrderBookBuckets")
         orderBook = await OrderBookBuckets.deploy(
+            owner.address,
             await matcherKernel.getAddress(),
             await vault.getAddress(),
             await baseToken.getAddress(),
             await quoteToken.getAddress(),
+            wad("1"),
+            wad("6"),
         )
         await orderBook.waitForDeployment()
 
@@ -141,5 +144,43 @@ describe("OrderBookBuckets", () => {
         await expect(orderBook.connect(taker).placeOrder(wad("11"), wad("1"), 0))
             .to.be.revertedWithCustomError(orderBook, "ConsumedCountMismatch")
             .withArgs(0, 2, 1)
+    })
+
+    it("enforces pair-level minimum quantity and notional", async () => {
+        await expect(orderBook.connect(makerA).placeOrder(wad("10"), wad("0.5"), 1))
+            .to.be.revertedWithCustomError(orderBook, "OrderBelowMinimumQuantity")
+            .withArgs(wad("0.5"), wad("1"))
+
+        await expect(orderBook.connect(makerA).placeOrder(wad("5"), wad("1"), 1))
+            .to.be.revertedWithCustomError(orderBook, "OrderBelowMinimumNotional")
+            .withArgs(wad("5"), wad("6"))
+    })
+
+    it("quotes a crossing order through the matcher without mutating state", async () => {
+        await orderBook.connect(makerA).placeOrder(wad("10"), wad("2"), 1)
+        await matcherKernel.setRecordPayload(false)
+
+        const tradeResponse =
+            "0x00" +
+            "00000001" +
+            "00000001" +
+            "00000000" +
+            "0000000000000002" +
+            "0000000000000001" +
+            "00000000000000008ac7230489e80000" +
+            "00000000000000000de0b6b3a7640000"
+        await matcherKernel.setResponse(tradeResponse)
+
+        const quote = await orderBook.quoteOrder(wad("11"), wad("1"), 0)
+        const askOrder = await orderBook.orders(1)
+
+        expect(quote.status).to.equal(0n)
+        expect(quote.tradeCount).to.equal(1n)
+        expect(quote.executedBaseQuantity).to.equal(wad("1"))
+        expect(quote.executedQuoteQuantity).to.equal(wad("10"))
+        expect(quote.trades[0].bidOrderId).to.equal(2n)
+        expect(quote.trades[0].askOrderId).to.equal(1n)
+        expect(askOrder.filled).to.equal(0n)
+        expect(await matcherKernel.lastPayload()).to.equal("0x")
     })
 })

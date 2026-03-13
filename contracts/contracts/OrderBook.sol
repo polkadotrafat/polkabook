@@ -217,12 +217,11 @@ contract OrderBook {
                 continue;
             }
 
-            scratch[count] = MatcherCodec.Order({
-                orderId: order.orderId,
-                trader: order.trader,
-                price: order.price,
-                quantity: order.quantity,
-                filled: order.filled,
+                scratch[count] = MatcherCodec.Order({
+                    orderId: order.orderId,
+                    price: order.price,
+                    quantity: order.quantity,
+                    filled: order.filled,
                 timestamp: order.timestamp,
                 side: order.side
             });

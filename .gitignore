@@ -4,6 +4,7 @@
 # Editor and local environment files
 .env
 .env.*
+Architecture.md
 
 # Build outputs
 contracts/artifacts/

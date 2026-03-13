@@ -4,7 +4,7 @@ pragma solidity ^0.8.28;
 library MatcherCodec {
     bytes4 internal constant MATCH_ORDERS_SELECTOR = 0xd52a118e;
     uint256 internal constant HEADER_SIZE = 12;
-    uint256 internal constant ORDER_SIZE = 85;
+    uint256 internal constant ORDER_SIZE = 65;
     uint256 internal constant TRADE_SIZE = 48;
     uint256 internal constant RESPONSE_HEADER_SIZE = 13;
 
@@ -22,7 +22,6 @@ library MatcherCodec {
 
     struct Order {
         uint64 orderId;
-        address trader;
         uint128 price;
         uint128 quantity;
         uint128 filled;
@@ -125,12 +124,11 @@ library MatcherCodec {
 
     function _writeOrder(bytes memory out, uint256 offset, Order memory order) private pure {
         _writeUint(out, offset, order.orderId, 8);
-        _writeUint(out, offset + 8, uint160(order.trader), 20);
-        _writeUint(out, offset + 28, order.price, 16);
-        _writeUint(out, offset + 44, order.quantity, 16);
-        _writeUint(out, offset + 60, order.filled, 16);
-        _writeUint(out, offset + 76, order.timestamp, 8);
-        out[offset + 84] = bytes1(order.side);
+        _writeUint(out, offset + 8, order.price, 16);
+        _writeUint(out, offset + 24, order.quantity, 16);
+        _writeUint(out, offset + 40, order.filled, 16);
+        _writeUint(out, offset + 56, order.timestamp, 8);
+        out[offset + 64] = bytes1(order.side);
     }
 
     function _writeU32(bytes memory out, uint256 offset, uint32 value) private pure {

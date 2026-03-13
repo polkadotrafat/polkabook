@@ -4,7 +4,7 @@ extern crate alloc;
 
 use alloc::vec::Vec;
 
-pub const ORDER_SIZE: usize = 85;
+pub const ORDER_SIZE: usize = 65;
 pub const TRADE_SIZE: usize = 48;
 pub const HEADER_SIZE: usize = 12;
 pub const RESPONSE_HEADER_SIZE: usize = 13;
@@ -23,7 +23,6 @@ pub const STATUS_INPUT_TOO_LARGE: u8 = 6;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Order {
     pub order_id: u64,
-    pub trader: [u8; 20],
     pub price: u128,
     pub quantity: u128,
     pub filled: u128,
@@ -101,17 +100,13 @@ pub fn parse_order(bytes: &[u8]) -> Option<Order> {
         return None;
     }
 
-    let mut trader = [0u8; 20];
-    trader.copy_from_slice(&bytes[8..28]);
-
     let order = Order {
         order_id: read_u64_be(&bytes[0..8]),
-        trader,
-        price: read_u128_be(&bytes[28..44]),
-        quantity: read_u128_be(&bytes[44..60]),
-        filled: read_u128_be(&bytes[60..76]),
-        timestamp: read_u64_be(&bytes[76..84]),
-        side: bytes[84],
+        price: read_u128_be(&bytes[8..24]),
+        quantity: read_u128_be(&bytes[24..40]),
+        filled: read_u128_be(&bytes[40..56]),
+        timestamp: read_u64_be(&bytes[56..64]),
+        side: bytes[64],
     };
 
     if order.side > 1 || order.quantity == 0 || order.filled > order.quantity {
@@ -281,7 +276,6 @@ mod tests {
     fn encode_order(order: Order) -> Vec<u8> {
         let mut out = Vec::with_capacity(ORDER_SIZE);
         out.extend_from_slice(&order.order_id.to_be_bytes());
-        out.extend_from_slice(&order.trader);
         out.extend_from_slice(&order.price.to_be_bytes());
         out.extend_from_slice(&order.quantity.to_be_bytes());
         out.extend_from_slice(&order.filled.to_be_bytes());
@@ -293,7 +287,6 @@ mod tests {
     fn sample_order(order_id: u64, price: u128, quantity: u128, timestamp: u64, side: u8) -> Order {
         Order {
             order_id,
-            trader: [0u8; 20],
             price,
             quantity,
             filled: 0,
