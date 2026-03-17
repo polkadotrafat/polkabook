@@ -1,6 +1,0 @@
-{
-  "PolkaBookPairModule#BaseToken": "0x8397E32E7f43E75f5BfF7D234905Df34Cb08ea8E",
-  "PolkaBookPairModule#QuoteToken": "0x1823E9b9b2eD47243aDB66DC49570EED4B5748C5",
-  "PolkaBookPairModule#Vault": "0x4eEd7fF1d2234232bCfc9707b24ab9E58A7D8F40",
-  "PolkaBookPairModule#OrderBookBuckets": "0xa894C0c4553969072B914DA7E1a1a223624b2530"
-}

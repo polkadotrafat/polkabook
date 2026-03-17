@@ -17,9 +17,12 @@ node_modules
 
 # Hardhat Ignition default folder for deployments against a local node
 ignition/deployments/chain-31337
+ignition/deployments/
+ignition/parameters/*.json
 
 # Local tool outputs
 /typechain
 /typechain-types
 /bin/dev-node
 /bin/eth-rpc
+.papi/

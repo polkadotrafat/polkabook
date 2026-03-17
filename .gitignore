@@ -16,6 +16,10 @@ contracts/coverage.json
 contracts/typechain/
 contracts/typechain-types/
 kernel/target/
+tools/revive-linker/target/
+contracts/.papi/
+contracts/ignition/deployments/
+contracts/ignition/parameters/*.json
 
 # Local binaries and generated kernel artifacts
 contracts/bin/dev-node
