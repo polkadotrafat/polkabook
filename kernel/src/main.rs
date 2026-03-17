@@ -46,6 +46,9 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 }
 
 #[polkavm_export]
+pub extern "C" fn deploy() {}
+
+#[polkavm_export]
 pub extern "C" fn call() {
     let size = HostFnImpl::call_data_size() as usize;
     if size > MAX_CALLDATA_SIZE {

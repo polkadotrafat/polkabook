@@ -4,7 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "deploy:kernel:local": "hardhat run scripts/deployKernel.ts --network localNode",
+    "deploy:kernel:testnet": "hardhat run scripts/deployKernel.ts --network polkadotHubTestnet",
+    "deploy:pair:local": "hardhat ignition deploy ./ignition/modules/PolkaBookPair.ts --network localNode",
+    "deploy:pair:testnet": "hardhat ignition deploy ./ignition/modules/PolkaBookPair.ts --network polkadotHubTestnet"
   },
   "keywords": [],
   "author": "",
@@ -14,5 +18,10 @@
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@parity/hardhat-polkadot": "^0.2.7",
     "@parity/resolc": "^1.0.0"
+  },
+  "dependencies": {
+    "@polkadot-api/descriptors": "file:.papi/descriptors",
+    "@polkadot-api/substrate-bindings": "^0.17.0",
+    "blakejs": "^1.2.1"
   }
 }

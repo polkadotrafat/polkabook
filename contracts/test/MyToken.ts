@@ -13,7 +13,7 @@ describe("MyToken", () => {
         ;[owner, addr1, addr2] = await hre.ethers.getSigners()
 
         const MyToken = await hre.ethers.getContractFactory("MyToken")
-        token = await MyToken.deploy(toWei("1000000"))
+        token = await MyToken.deploy("MyToken", "MTK", toWei("1000000"))
         await token.waitForDeployment()
     })
 

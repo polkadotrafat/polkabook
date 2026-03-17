@@ -6,6 +6,8 @@
 .env.*
 Architecture.md
 
+/deployments/*
+
 # Build outputs
 contracts/artifacts/
 contracts/cache/

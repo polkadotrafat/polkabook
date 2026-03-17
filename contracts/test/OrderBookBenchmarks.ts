@@ -27,10 +27,10 @@ describe("OrderBook Benchmarks", () => {
         ;[owner, makerA, makerB, makerC, taker] = await hre.ethers.getSigners()
 
         const MyToken = await hre.ethers.getContractFactory("MyToken")
-        baseToken = await MyToken.deploy(wad("1000000"))
+        baseToken = await MyToken.deploy("Base Token", "BASE", wad("1000000"))
         await baseToken.waitForDeployment()
 
-        quoteToken = await MyToken.deploy(wad("1000000"))
+        quoteToken = await MyToken.deploy("Quote Token", "QUOTE", wad("1000000"))
         await quoteToken.waitForDeployment()
 
         for (const user of [makerA, makerB, makerC]) {
