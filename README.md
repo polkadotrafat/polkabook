@@ -137,7 +137,7 @@ Start from [`contracts/.env.example`](/Users/rafat/code/hackathons/polkabook/con
 
 ```env
 PRIVATE_KEY=0xyour_private_key_here
-TESTNET_RPC_URL=https://testnet-passet-hub-eth-rpc.polkadot.io
+TESTNET_RPC_URL=https://services.polkadothub-rpc.com/testnet/
 POLKADOT_RPC_URL=wss://asset-hub-paseo-rpc.n.dwellir.com
 LOCALNODE_RPC_URL=http://127.0.0.1:8545
 KERNEL_BYTECODE_PATH=../kernel/matcher.polkavm
@@ -347,11 +347,6 @@ Frontend files:
 - the current quote and portfolio views are scaffolded ahead of live wallet integration
 
 ## Important Files
-
-### Documentation
-
-- [`Architecture.md`](/Users/rafat/code/hackathons/polkabook/Architecture.md)
-- [`overview.md`](/Users/rafat/code/hackathons/polkabook/overview.md)
 
 ### Kernel
 
