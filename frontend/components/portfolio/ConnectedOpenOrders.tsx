@@ -49,15 +49,21 @@ export function ConnectedOpenOrders({ marketAddress }: ConnectedOpenOrdersProps)
 
       setLoading(true);
       try {
-        const results = await publicClient.multicall({
-          contracts: trackedOrderIds.map((orderId) => ({
-            address: marketAddress,
-            abi: orderBookAbi,
-            functionName: "orders",
-            args: [orderId],
-          })),
-          allowFailure: true,
-        });
+        const results = await Promise.all(
+          trackedOrderIds.map(async (orderId) => {
+            try {
+              const result = await publicClient.readContract({
+                address: marketAddress,
+                abi: orderBookAbi,
+                functionName: "orders",
+                args: [orderId],
+              });
+              return { status: "success", result };
+            } catch (error) {
+              return { status: "failure", error };
+            }
+          })
+        );
 
         const nextOrders: TrackedOrder[] = [];
         for (let i = 0; i < results.length; i += 1) {

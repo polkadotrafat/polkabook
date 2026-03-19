@@ -19,41 +19,31 @@ The goal is not to recreate a full unbounded exchange engine on-chain. The goal 
   Next.js frontend.
 - [`overview.md`](/Users/rafat/code/hackathons/polkabook/overview.md)
   Original project overview.
-- [`Architecture.md`](/Users/rafat/code/hackathons/polkabook/Architecture.md)
-  Current implementation architecture.
 
-## Current Architecture
+## Architecture & Design
 
-The live implementation is organized around these components:
+The live implementation is organized around separating storage-heavy state (Solidity) from compute-heavy matching logic (Rust).
 
-- `MatcherKernel` in Rust
-  Stateless, `no_std`, bounded matching engine.
-- `Vault.sol`
-  Custody and locked-balance accounting.
-- `PairRegistry.sol`
-  Pair deployment and pair-level trading configuration.
-- `OrderBookBuckets.sol`
-  Bucketed linked-list order book with FIFO queues per price level.
-- `OrderBook.sol`
-  Legacy sorted-array reference implementation for comparison and benchmarking.
-- frontend read layer
-  Pair discovery, top-of-book display, quote preview, and portfolio scaffolding.
+### System Components
 
-The current bucketed order book:
+- **`MatcherKernel` (Rust)**: A stateless, `no_std`, bounded matching engine compiled to PolkaVM. It receives a compact binary payload of order frontiers, matches them iteratively, and returns the results.
+- **`Vault.sol`**: Manages custody and locked-balance accounting. It accounts for fee-on-transfer tokens using pre- and post-transfer balance checks.
+- **`PairRegistry.sol`**: Handles pair deployment and pair-level trading constraints. It acts as the discovery layer.
+- **`OrderBookBuckets.sol`**: The core bucketed order book contract. It stores canonical orders and passes matching "frontiers" to the Rust kernel via cross-VM calls.
 
-- stores active price levels as doubly linked lists
-- preserves FIFO inside each level
-- collects only a bounded matching frontier
-- fails closed when tombstone fragmentation exceeds `MAX_SKIPS`
+### The Order-Book Data Model
 
-The Rust kernel:
+PolkaBook does not maintain one globally sorted array of all resting orders, as this is prohibitively expensive in the EVM. Instead, the bucketed book:
+- Stores active price levels as **doubly linked lists**.
+- Preserves **FIFO (First-In-First-Out)** priority inside each price level.
+- Handles cancellations lazily: orders become "tombstones." The system fails closed (reverts) if tombstone fragmentation exceeds a safe `MAX_SKIPS` limit, ensuring price priority is strictly maintained.
 
-- validates sorted input
-- does not sort internally anymore
-- matches using a bounded iterative loop
-- returns compact trade results plus consumed frontier counts
+### Matching Architecture
 
-For the full architecture, see [`Architecture.md`](/Users/rafat/code/hackathons/polkabook/Architecture.md).
+When a trade is triggered, the system only matches a bounded top-of-book window (e.g., a `MATCH_DEPTH` of 20). 
+- Solidity collects the top bid and ask frontiers and packs them into a binary ABI.
+- The Rust kernel receives the payload, validates the ordering, executes a bounded iterative matching loop in raw memory, and returns the trade results.
+- Solidity decodes the results, updates order states, and settles token balances through the `Vault`.
 
 ## Tech Stack
 
@@ -121,7 +111,6 @@ For each pair it can:
 
 - Rust nightly
 - `cargo`
-- `polkatool`
 
 ### Testnet deployment
 
@@ -174,12 +163,14 @@ npm install
 
 ### Kernel
 
-Make sure Rust nightly and `polkatool` are available, then:
+Make sure Rust nightly and `cargo` are available, then:
 
 ```bash
 cd kernel
 ./build.sh
 ```
+
+(The `build.sh` script automatically uses the local `revive-linker` tool via `cargo run` to generate the correct Revive-compatible bytecode.)
 
 This builds:
 
@@ -268,8 +259,8 @@ npm run deploy:kernel:testnet
 
 This script is intended to:
 
-- read `matcher.polkavm`
-- deploy it through the configured EVM-compatible RPC
+- read `matcher_kernel` (ELF)
+- deploy it through the configured EVM/Substrate RPC endpoints using a two-step `upload_code` and `instantiate` flow.
 - write a manifest under `deployments/<network>/kernel.json`
 
 ### 4. Deploy demo pair contracts and ERC-20s
@@ -342,7 +333,6 @@ Frontend files:
 ## Known Limitations
 
 - frontend is still read-only and not yet wired to live contract reads
-- frontend is still read-only
 - there is no indexing layer yet for full historical order and trade views
 - the current quote and portfolio views are scaffolded ahead of live wallet integration
 
@@ -371,12 +361,4 @@ Frontend files:
 
 ## Summary
 
-PolkaBook is currently a working hybrid architecture with:
-
-- a bounded Rust matcher kernel
-- a linked-list bucketed Solidity order book
-- a hardened vault and registry model
-- test coverage across codec, order book, registry, and integration flows
-- an in-progress frontend built around the current contract design
-
-The main open integration area is the exact testnet deployment path for the PolkaVM kernel. Everything else in the repo is already structured around that eventual production path.
+PolkaBook is a working hybrid architecture featuring a bounded Rust matcher kernel and a linked-list bucketed Solidity order book. It maintains test coverage across its codec, order book, registry, and integration flows, and includes an in-progress frontend built around the current contract design.
