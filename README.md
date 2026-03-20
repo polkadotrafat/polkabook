@@ -11,14 +11,12 @@ The goal is not to recreate a full unbounded exchange engine on-chain. The goal 
 
 ## Repository Structure
 
-- [`kernel/`](/Users/rafat/code/hackathons/polkabook/kernel)
+- [`kernel/`](https://github.com/polkadotrafat/polkabook/tree/main/kernel)
   Rust matcher kernel compiled to `.polkavm`.
-- [`contracts/`](/Users/rafat/code/hackathons/polkabook/contracts)
+- [`contracts/`](https://github.com/polkadotrafat/polkabook/tree/main/contracts)
   Solidity contracts, Hardhat tests, Ignition modules, and deployment scripts.
-- [`frontend/`](/Users/rafat/code/hackathons/polkabook/frontend)
+- [`frontend/`](https://github.com/polkadotrafat/polkabook/tree/main/frontend)
   Next.js frontend.
-- [`overview.md`](/Users/rafat/code/hackathons/polkabook/overview.md)
-  Original project overview.
 
 ## Architecture & Design
 
