@@ -118,9 +118,9 @@ For each pair it can:
 
 ## Environment Variables
 
-The contracts package reads [`contracts/.env`](/Users/rafat/code/hackathons/polkabook/contracts/.env) automatically.
+The contracts package reads [`contracts/.env`] automatically.
 
-Start from [`contracts/.env.example`](/Users/rafat/code/hackathons/polkabook/contracts/.env.example):
+Start from [`contracts/.env.example`]:
 
 ```env
 PRIVATE_KEY=0xyour_private_key_here
@@ -172,7 +172,7 @@ cd kernel
 
 This builds:
 
-- [`kernel/matcher.polkavm`](/Users/rafat/code/hackathons/polkabook/kernel/matcher.polkavm)
+- [`kernel/matcher.polkavm`]
 
 ## Running Tests
 
@@ -227,7 +227,7 @@ cd contracts
 npm test
 ```
 
-The repo also contains Polkadot Hardhat configuration in [`contracts/hardhat.config.ts`](/Users/rafat/code/hackathons/polkabook/contracts/hardhat.config.ts).
+The repo also contains Polkadot Hardhat configuration in [`contracts/hardhat.config.ts`](https://github.com/polkadotrafat/polkabook/tree/main/contracts/hardhat.config.ts).
 
 ## Deployment
 
@@ -240,13 +240,13 @@ cd kernel
 
 ### 2. Prepare contract environment
 
-Create [`contracts/.env`](/Users/rafat/code/hackathons/polkabook/contracts/.env) using the example file.
+Create .env using the example file.
 
 ### 3. Deploy the kernel
 
 Current script:
 
-- [`contracts/scripts/deployKernel.ts`](/Users/rafat/code/hackathons/polkabook/contracts/scripts/deployKernel.ts)
+- [`contracts/scripts/deployKernel.ts`](https://github.com/polkadotrafat/polkabook/tree/main/contracts/scripts/deployKernel.ts)
 
 Command:
 
@@ -265,11 +265,11 @@ This script is intended to:
 
 Ignition modules:
 
-- [`contracts/ignition/modules/MyToken.ts`](/Users/rafat/code/hackathons/polkabook/contracts/ignition/modules/MyToken.ts)
-- [`contracts/ignition/modules/PolkaBookPair.ts`](/Users/rafat/code/hackathons/polkabook/contracts/ignition/modules/PolkaBookPair.ts)
+- [`contracts/ignition/modules/MyToken.ts`]
+- [`contracts/ignition/modules/PolkaBookPair.ts`]
 - generic parameter templates:
-  - [`contracts/ignition/parameters/polkadotHubTestnet.example.json`](/Users/rafat/code/hackathons/polkabook/contracts/ignition/parameters/polkadotHubTestnet.example.json)
-  - [`contracts/ignition/parameters/localNode.example.json`](/Users/rafat/code/hackathons/polkabook/contracts/ignition/parameters/localNode.example.json)
+  - [`contracts/ignition/parameters/polkadotHubTestnet.example.json`]
+  - [`contracts/ignition/parameters/localNode.example.json`]
 
 The pair deployment module currently deploys:
 
@@ -324,9 +324,9 @@ Current frontend notes:
 
 Frontend files:
 
-- [`frontend/app`](/Users/rafat/code/hackathons/polkabook/frontend/app)
-- [`frontend/components`](/Users/rafat/code/hackathons/polkabook/frontend/components)
-- [`frontend/lib`](/Users/rafat/code/hackathons/polkabook/frontend/lib)
+- [`frontend/app`]
+- [`frontend/components`]
+- [`frontend/lib`]
 
 ## Known Limitations
 
@@ -338,24 +338,24 @@ Frontend files:
 
 ### Kernel
 
-- [`kernel/src/kernel.rs`](/Users/rafat/code/hackathons/polkabook/kernel/src/kernel.rs)
-- [`kernel/src/main.rs`](/Users/rafat/code/hackathons/polkabook/kernel/src/main.rs)
-- [`kernel/build.sh`](/Users/rafat/code/hackathons/polkabook/kernel/build.sh)
+- [`kernel/src/kernel.rs`]
+- [`kernel/src/main.rs`]
+- [`kernel/build.sh`]
 
 ### Contracts
 
-- [`contracts/contracts/OrderBookBuckets.sol`](/Users/rafat/code/hackathons/polkabook/contracts/contracts/OrderBookBuckets.sol)
-- [`contracts/contracts/Vault.sol`](/Users/rafat/code/hackathons/polkabook/contracts/contracts/Vault.sol)
-- [`contracts/contracts/PairRegistry.sol`](/Users/rafat/code/hackathons/polkabook/contracts/contracts/PairRegistry.sol)
-- [`contracts/contracts/MatcherCodec.sol`](/Users/rafat/code/hackathons/polkabook/contracts/contracts/MatcherCodec.sol)
-- [`contracts/scripts/deployKernel.ts`](/Users/rafat/code/hackathons/polkabook/contracts/scripts/deployKernel.ts)
-- [`contracts/hardhat.config.ts`](/Users/rafat/code/hackathons/polkabook/contracts/hardhat.config.ts)
+- [`contracts/contracts/OrderBookBuckets.sol`]
+- [`contracts/contracts/Vault.sol`]
+- [`contracts/contracts/PairRegistry.sol`]
+- [`contracts/contracts/MatcherCodec.sol`]
+- [`contracts/scripts/deployKernel.ts`]
+- [`contracts/hardhat.config.ts`]
 
 ### Frontend
 
-- [`frontend/app/layout.tsx`](/Users/rafat/code/hackathons/polkabook/frontend/app/layout.tsx)
-- [`frontend/app/page.tsx`](/Users/rafat/code/hackathons/polkabook/frontend/app/page.tsx)
-- [`frontend/app/markets/[pairAddress]/page.tsx`](/Users/rafat/code/hackathons/polkabook/frontend/app/markets/[pairAddress]/page.tsx)
+- [`frontend/app/layout.tsx`]
+- [`frontend/app/page.tsx`]
+- [`frontend/app/markets/[pairAddress]/page.tsx`]
 
 ## Summary
 
